@@ -1,0 +1,123 @@
+---
+title       : UK Motorway accidents drill down 
+subtitle    : Shiny web application created for - Developing Data Products
+author      : B Allene
+job         : Data Plumber
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+logo        : 4910669.jpg
+
+---
+
+## Overview
+As part of open data initiative UK government published data of off accidents happend in UK scince 1979 (link to data). This data set include 
+
+1.Accident details (like date, locations, road etc)
+
+2.Vehicle detaila (details of vechcles that are involved in accidents)
+
+3.Casualities (Casuality details. If any)
+
+Main objective of this application is to provide ability to drill down all accidents happend on motorways by Year, Motorway and month.
+
+---
+
+## Accidents by year.
+
+```{r, echo=FALSE,fig.width=14., fig.height=6}
+library(ggplot2)
+dataset <-read.csv("../accidents_subset.csv",sep=",",head=T)
+groupByYear <- aggregate(dataset$accidents, by=list( Year=dataset$year), FUN=sum)
+colnames(groupByYear)[2] <- "Accidents"
+
+details <- paste ("Total accidents on UK Moterways between 1979 and 2004 -",
+                  sum(groupByYear$Accidents))
+p <- ggplot(groupByYear, aes(Year, Accidents)) 
+p <- p + geom_bar(stat = "identity",fill=groupByYear$Year) 
+p <- p + theme(axis.text=element_text(size=12),
+               axis.title=element_text(size=14,face="bold"))
+p <- p + annotate("text", x = 1990, y = 10000,
+                  label = details,
+                  colour = "blue",face="bold", size=6)
+p <- p + ggtitle("UK Motorway accidents by year")
+p <- p + theme(plot.title = element_text(lineheight=.8, face="bold"))
+p
+
+```
+Thre was continuous rise on number of accidents on Uk motorways until 2000 then there is slight decline.
+
+--- 
+
+## Accidents breakdown by Motorways
+
+```{r echo=FALSE,fig.width=14., fig.height=6}
+groupByMotorway <- aggregate(dataset$accidents, 
+                             by=list(Motorway=dataset$motorway), FUN=sum)
+colnames(groupByMotorway)[2] <- "Accidents"
+# Just display Top 10
+motorways <- groupByMotorway$Motorway [order (groupByMotorway$Accidents, 
+                                              decreasing = TRUE)]
+top10 = subset(groupByMotorway, Motorway %in% motorways [1:10])
+        
+details <- paste ("Total accidents on UK Moterways between 1979 and 2004 :",
+                  sum(groupByYear$Accidents))
+p <- ggplot(top10, aes(x=reorder(Motorway, -Accidents), Accidents)) 
+p <- p + geom_bar(stat = "identity",fill=as.numeric(top10$Motorway))
+p <- p + theme(axis.text=element_text(size=9,face="bold"),
+               axis.title=element_text(size=14,face="bold"),
+               axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+p <- p + xlab("Moterway")
+p <- p + ggtitle("UK Worst 10 motorways 1979-2004" )
+p <- p + theme(plot.title = element_text(lineheight=.8, face="bold"))
+p <- p + annotate("text", x=7 , y=25000,label = details,
+                  colour = "blue",face='bold', size=7)          
+p
+```
+No surprise M1 is longest motorway (London to Leads)
+
+---
+
+## Accidents breakdown by Motorways
+
+```{r echo=FALSE,fig.width=14., fig.height=6}
+library(plyr)
+groupByMonth <- aggregate(dataset$accidents, by=list(Month=dataset$month),
+                          FUN=sum)
+months <- c('Jan','Feb','Mar','Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+colnames(groupByMonth)[2] <- "Accidents"
+details <- paste ("Total accidents on UK Moterways between 1979 and 2004 :", 
+                  sum(groupByMonth$Accidents))
+p <- ggplot(groupByMonth, aes(x=Month, Accidents)) 
+p <- p + geom_bar(stat = "identity",
+                  fill=groupByMonth$Month)
+p <- p + theme(axis.text=element_text(size=9,face="bold"),
+               axis.title=element_text(size=14,face="bold"),
+               axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+p <- p + xlab("Month")
+p <- p + ggtitle("UK Motorway accidents by month" )
+p <- p + theme(plot.title = element_text(lineheight=.8, face="bold"))
+p <- p + annotate("text", x=7 , y=20000,label = details,
+                  colour = "blue",face='bold', size=7)   
+p <- p + scale_x_discrete(breaks = 1:12, labels=months) 
+p
+
+```
+August month seems got more accidents.
+is it because of Summer holidays?
+
+---
+# Further plans
+Planning to acdd Vehicles & casuality data to this web application. 
+
+# References
+1. [Data.gov.uk](http://data.dft.gov.uk.s3.amazonaws.com/road-accidents-safety-data/Stats19-Data1979-2004.zip)
+
+2. [UK Motorways Wiki](http://en.wikipedia.org/wiki/List_of_motorways_in_the_United_Kingdom)
+
+3. [Developing Data Products -Coursera](https://class.coursera.org/devdataprod-002)
+
