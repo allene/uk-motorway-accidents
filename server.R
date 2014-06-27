@@ -94,7 +94,8 @@ shinyServer(function(input, output) {
         
       }
       } else if(input$xaxis == 'bymonth') {
-        
+        months <- c('Jan','Feb','Mar','Apr', 'May', 'Jun', 
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
         if(input$year == '-All-') {
           acc_by_month <- aggregate(dataset$accidents, by=list(Month=dataset$month), FUN=sum)
           colnames(acc_by_month)[2] <- "Accidents"
@@ -107,9 +108,10 @@ shinyServer(function(input, output) {
                          axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
           p <- p + xlab("Month")
           p <- p + ggtitle(title )
+          p <- p + scale_x_discrete(breaks = 1:12, labels=months)
           p <- p + theme(plot.title = element_text(lineheight=.8, face="bold"))
           p <- p + annotate("text", x=7 , y=20000,label = details,
-                            colour = "blue",face='bold', size=7)          
+                            colour = "blue",face='bold', size=7)  
         } else {
           title <- paste("UK Motorway accidents by month in ",input$year)
           acc = acc_by_year[acc_by_year$Year == input$year,][,2]
@@ -128,10 +130,11 @@ shinyServer(function(input, output) {
           #                  colour = "blue",face='bold', size=7)
           p <- p + xlab("Month")
           p <- p + ggtitle(title )
+          p <- p + scale_x_discrete(breaks = 1:12, labels=months)
           p <- p + theme(plot.title = element_text(lineheight=.8, face="bold"))
           p <- p + annotate("text", x=7 , y=1000,label = details,
-                            colour = "blue",face='bold', size=7)          
-          
+                            colour = "blue",face='bold', size=7)
+           
         }
       }  
     print(p)
